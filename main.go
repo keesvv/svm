@@ -43,7 +43,11 @@ func printServices(services []*Service) {
 		len(services),
 	)
 
-	for _, i := range services {
+	svOrdered := make([]*Service, 0, len(svRunning)+len(svStopped))
+	svOrdered = append(svOrdered, svRunning...)
+	svOrdered = append(svOrdered, svStopped...)
+
+	for _, i := range svOrdered {
 		status := "\033[91;1mSTOPPED\033[0m"
 		if i.Running {
 			status = "\033[92;1mRUNNING\033[0m"
