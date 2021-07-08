@@ -1,31 +1,19 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"path"
 	"strings"
 
 	"github.com/keesvv/svm/errs"
+	"github.com/keesvv/svm/service"
 )
 
-const SV_PATH string = "/etc/runit/sv"
-
-type Service struct {
-	Name    string
-	Running bool
-	Path    string
-}
-
-var NoSuchServiceError = errors.New("no such service")
-
-func printServices(services []*Service) {
+func printServices(services []*service.Service) {
 	max := 0
 
-	svRunning := make([]*Service, 0)
-	svStopped := make([]*Service, 0)
+	svRunning := make([]*service.Service, 0)
+	svStopped := make([]*service.Service, 0)
 
 	// Calculate max service name length
 	// Also separate running services from stopped ones
@@ -49,7 +37,7 @@ func printServices(services []*Service) {
 		len(services),
 	)
 
-	svOrdered := make([]*Service, 0, len(svRunning)+len(svStopped))
+	svOrdered := make([]*service.Service, 0, len(svRunning)+len(svStopped))
 	svOrdered = append(svOrdered, svRunning...)
 	svOrdered = append(svOrdered, svStopped...)
 
@@ -60,130 +48,44 @@ func printServices(services []*Service) {
 		}
 
 		// Print service
-		fmt.Printf("\033[1m%s\033[0m%s%s\n", i.Name, strings.Repeat(" ", max-len(i.Name)+5), status)
+		fmt.Printf(
+			"\033[1m%s\033[0m%s%s\n",
+			i.Name,
+			strings.Repeat(" ", max-len(i.Name)+5),
+			status,
+		)
 	}
-}
-
-func listServices() []*Service {
-	// List service dirs
-	svDirs, err := ioutil.ReadDir(SV_PATH)
-	if err != nil {
-		panic(err)
-	}
-
-	services := make([]*Service, 0)
-	for _, i := range svDirs {
-		svEnabled := false
-		f, err := ioutil.ReadFile(path.Join(SV_PATH, i.Name(), "supervise", "stat"))
-
-		// User has insufficient permissions
-		if os.IsPermission(err) {
-			fmt.Println("svm is unable to list services; are you sure you are running this as root?")
-			os.Exit(1)
-		}
-
-		// An unknown error occurred
-		if err != nil && !os.IsNotExist(err) {
-			panic(err)
-		}
-
-		// PID file exists, service is running
-		if err == nil && string(f) == "run\n" {
-			svEnabled = true
-		}
-
-		services = append(services, &Service{
-			Name:    i.Name(),
-			Running: svEnabled,
-			Path:    path.Join(SV_PATH, i.Name()),
-		})
-	}
-
-	return services
-}
-
-func stopService(service *Service) error {
-	if !service.Running {
-		fmt.Println("service is already stopped")
-		os.Exit(1)
-	}
-
-	// Open control file for writing
-	f, err := os.Create(path.Join(service.Path, "supervise", "control"))
-	if err != nil {
-		panic(err)
-	}
-
-	// Write stop command
-	f.Write([]byte("d"))
-
-	return f.Close()
-}
-
-func startService(service *Service) error {
-	if service.Running {
-		fmt.Println("service is already running")
-		os.Exit(1)
-	}
-	// Open control file for writing
-	f, err := os.Create(path.Join(service.Path, "supervise", "control"))
-	if err != nil {
-		panic(err)
-	}
-
-	// Write stop command
-	f.Write([]byte("u"))
-
-	return f.Close()
-}
-
-func findService(services []*Service, name string) (*Service, error) {
-	var sv *Service
-
-	for _, i := range services {
-		if i.Name == name {
-			sv = i
-			break
-		}
-	}
-
-	if sv == nil {
-		return nil, NoSuchServiceError
-	}
-
-	return sv, nil
 }
 
 func main() {
-	// List services
-	services := listServices()
+	args := os.Args[1:]
 
-	if len(os.Args) < 2 {
+	if len(args) < 1 {
 		fmt.Println("too few arguments")
 		os.Exit(1)
 	}
 
-	args := os.Args[1:]
+	// List services
+	services := service.ListServices()
 
 	switch args[0] {
 	case "list", "l":
 		printServices(services)
 	case "stop", "d", "down":
-		sv, err := findService(services, args[1])
+		sv, err := services.FindByName(args[1])
 		if err != nil {
 			errs.HandleError(err)
 		}
 
-		stopService(sv)
+		sv.Stop()
 	case "start", "u", "up":
-		sv, err := findService(services, args[1])
+		sv, err := services.FindByName(args[1])
 		if err != nil {
 			errs.HandleError(err)
 		}
 
-		startService(sv)
+		sv.Start()
 	default:
-		fmt.Println("unknown subcommand")
-		os.Exit(1)
+		errs.HandleError(errs.ErrUnknownSubcommand)
 	}
 }
