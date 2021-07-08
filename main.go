@@ -13,6 +13,7 @@ const SV_PATH string = "/etc/runit/sv"
 type Service struct {
 	Name    string
 	Running bool
+	Path    string
 }
 
 func printServices(services []*Service) {
@@ -58,7 +59,7 @@ func printServices(services []*Service) {
 	}
 }
 
-func main() {
+func listServices() []*Service {
 	// List service dirs
 	svDirs, err := ioutil.ReadDir(SV_PATH)
 	if err != nil {
@@ -68,7 +69,7 @@ func main() {
 	services := make([]*Service, 0)
 	for _, i := range svDirs {
 		svEnabled := false
-		f, err := ioutil.ReadFile(path.Join(SV_PATH, i.Name(), "supervise", "pid"))
+		f, err := ioutil.ReadFile(path.Join(SV_PATH, i.Name(), "supervise", "stat"))
 
 		// User has insufficient permissions
 		if os.IsPermission(err) {
@@ -82,15 +83,77 @@ func main() {
 		}
 
 		// PID file exists, service is running
-		if err == nil && len(f) > 0 {
+		if err == nil && string(f) == "run\n" {
 			svEnabled = true
 		}
 
 		services = append(services, &Service{
 			Name:    i.Name(),
 			Running: svEnabled,
+			Path:    path.Join(SV_PATH, i.Name()),
 		})
 	}
 
-	printServices(services)
+	return services
+}
+
+func stopService(service *Service) error {
+	if !service.Running {
+		fmt.Println("service is already stopped")
+		os.Exit(1)
+	}
+
+	// Open control file for writing
+	f, err := os.Create(path.Join(service.Path, "supervise", "control"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Write stop command
+	f.Write([]byte("d"))
+
+	return f.Close()
+}
+
+func findService(services []*Service, name string) *Service {
+	var sv *Service
+
+	for _, i := range services {
+		if i.Name == name {
+			sv = i
+			break
+		}
+	}
+
+	return sv
+}
+
+func main() {
+	// List services
+	services := listServices()
+
+	if len(os.Args) < 2 {
+		fmt.Println("too few arguments")
+		os.Exit(1)
+	}
+
+	args := os.Args[1:]
+
+	switch args[0] {
+	case "list":
+	case "l":
+		printServices(services)
+	case "stop":
+	case "d":
+		sv := findService(services, args[1])
+		if sv == nil {
+			fmt.Println("no such service")
+			os.Exit(1)
+		}
+
+		stopService(sv)
+	default:
+		fmt.Println("unknown subcommand")
+		os.Exit(1)
+	}
 }
