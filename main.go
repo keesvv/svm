@@ -120,7 +120,24 @@ func stopService(service *Service) error {
 	return f.Close()
 }
 
-func findService(services []*Service, name string) *Service {
+func startService(service *Service) error {
+	if service.Running {
+		fmt.Println("service is already running")
+		os.Exit(1)
+	}
+	// Open control file for writing
+	f, err := os.Create(path.Join(service.Path, "supervise", "control"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Write stop command
+	f.Write([]byte("u"))
+
+	return f.Close()
+}
+
+func findService(services []*Service, name string) (*Service, error) {
 	var sv *Service
 
 	for _, i := range services {
@@ -158,6 +175,13 @@ func main() {
 		}
 
 		stopService(sv)
+	case "start", "u", "up":
+		sv, err := findService(services, args[1])
+		if err != nil {
+			errs.HandleError(err)
+		}
+
+		startService(sv)
 	default:
 		fmt.Println("unknown subcommand")
 		os.Exit(1)
