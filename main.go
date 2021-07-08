@@ -78,6 +78,7 @@ func main() {
 		}
 
 		errs.HandleError(sv.Stop())
+		fmt.Printf("\033[1m✔ Stopped service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
 	case "start", "u", "up":
 		sv, err := services.FindByName(args[1])
 		if err != nil {
@@ -85,6 +86,7 @@ func main() {
 		}
 
 		errs.HandleError(sv.Start())
+		fmt.Printf("\033[1m✔ Started service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
 	default:
 		errs.HandleError(errs.ErrUnknownSubcommand)
 	}
