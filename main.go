@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
+	"strings"
 )
 
 const SV_PATH string = "/etc/runit/sv"
@@ -14,13 +16,21 @@ type Service struct {
 }
 
 func printServices(services []*Service) {
+	max := 0
+
 	for _, i := range services {
-		status := "\033[91mDISABLED\033[0m"
+		if len(i.Name) > max {
+			max = len(i.Name)
+		}
+	}
+
+	for _, i := range services {
+		status := "\033[91;1mSTOPPED\033[0m"
 		if i.Enabled {
-			status = "\033[32mENABLED\033[0m"
+			status = "\033[92;1mRUNNING\033[0m"
 		}
 
-		fmt.Printf("\033[1m%s\033[0m\t%s\n", i.Name, status)
+		fmt.Printf("\033[1m%s\033[0m%s%s\n", i.Name, strings.Repeat(" ", max-len(i.Name)+5), status)
 	}
 }
 
@@ -35,6 +45,10 @@ func main() {
 		svEnabled := false
 
 		f, err := ioutil.ReadFile(path.Join(SV_PATH, i.Name(), "supervise", "pid"))
+
+		if err != nil && !os.IsNotExist(err) {
+			panic(err)
+		}
 
 		if err == nil && len(f) > 0 {
 			svEnabled = true
