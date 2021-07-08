@@ -1,11 +1,14 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/keesvv/svm/errs"
 )
 
 const SV_PATH string = "/etc/runit/sv"
@@ -15,6 +18,8 @@ type Service struct {
 	Running bool
 	Path    string
 }
+
+var NoSuchServiceError = errors.New("no such service")
 
 func printServices(services []*Service) {
 	max := 0
@@ -125,7 +130,11 @@ func findService(services []*Service, name string) *Service {
 		}
 	}
 
-	return sv
+	if sv == nil {
+		return nil, NoSuchServiceError
+	}
+
+	return sv, nil
 }
 
 func main() {
@@ -140,15 +149,12 @@ func main() {
 	args := os.Args[1:]
 
 	switch args[0] {
-	case "list":
-	case "l":
+	case "list", "l":
 		printServices(services)
-	case "stop":
-	case "d":
-		sv := findService(services, args[1])
-		if sv == nil {
-			fmt.Println("no such service")
-			os.Exit(1)
+	case "stop", "d", "down":
+		sv, err := findService(services, args[1])
+		if err != nil {
+			errs.HandleError(err)
 		}
 
 		stopService(sv)
