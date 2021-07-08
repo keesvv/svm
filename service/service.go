@@ -1,9 +1,10 @@
 package service
 
 import (
-	"fmt"
 	"os"
 	"path"
+
+	"github.com/keesvv/svm/errs"
 )
 
 type Service struct {
@@ -28,8 +29,7 @@ func (service *Service) WriteCommand(cmd string) error {
 
 func (service *Service) Stop() error {
 	if !service.Running {
-		fmt.Println("service is already stopped")
-		os.Exit(1)
+		return errs.ErrIsStopped
 	}
 
 	return service.WriteCommand("d")
@@ -37,8 +37,7 @@ func (service *Service) Stop() error {
 
 func (service *Service) Start() error {
 	if service.Running {
-		fmt.Println("service is already running")
-		os.Exit(1)
+		return errs.ErrIsStarted
 	}
 
 	return service.WriteCommand("u")

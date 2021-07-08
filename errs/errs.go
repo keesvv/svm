@@ -6,10 +6,18 @@ import (
 	"os"
 )
 
+var ErrArguments = errors.New("too few arguments")
 var ErrNoSuchService = errors.New("no such service")
 var ErrUnknownSubcommand = errors.New("unknown subcommand")
+var ErrIsStopped = errors.New("service is already stopped")
+var ErrIsStarted = errors.New("service is already running")
+var ErrPermission = errors.New("svm is unable to list services; are you sure you are running this as root?")
 
 func HandleError(err error) {
-	fmt.Printf("\033[91m%s\033[0m\n", err.Error())
+	if err == nil {
+		return
+	}
+
+	fmt.Printf("\033[1merror:\033[0m \033[91m%s\033[0m\n", err.Error())
 	os.Exit(1)
 }

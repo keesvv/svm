@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -29,7 +28,7 @@ func (list *ServiceList) FindByName(name string) (*Service, error) {
 	return sv, nil
 }
 
-func ListServices() ServiceList {
+func ListServices() (ServiceList, error) {
 	// List service dirs
 	svDirs, err := ioutil.ReadDir(consts.SV_PATH)
 	if err != nil {
@@ -43,13 +42,12 @@ func ListServices() ServiceList {
 
 		// User has insufficient permissions
 		if os.IsPermission(err) {
-			fmt.Println("svm is unable to list services; are you sure you are running this as root?")
-			os.Exit(1)
+			return nil, errs.ErrPermission
 		}
 
 		// An unknown error occurred
 		if err != nil && !os.IsNotExist(err) {
-			panic(err)
+			return nil, err
 		}
 
 		// PID file exists, service is running
@@ -64,5 +62,5 @@ func ListServices() ServiceList {
 		})
 	}
 
-	return services
+	return services, nil
 }

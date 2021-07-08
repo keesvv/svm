@@ -61,12 +61,12 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) < 1 {
-		fmt.Println("too few arguments")
-		os.Exit(1)
+		errs.HandleError(errs.ErrArguments)
 	}
 
 	// List services
-	services := service.ListServices()
+	services, err := service.ListServices()
+	errs.HandleError(err)
 
 	switch args[0] {
 	case "list", "l":
@@ -77,14 +77,14 @@ func main() {
 			errs.HandleError(err)
 		}
 
-		sv.Stop()
+		errs.HandleError(sv.Stop())
 	case "start", "u", "up":
 		sv, err := services.FindByName(args[1])
 		if err != nil {
 			errs.HandleError(err)
 		}
 
-		sv.Start()
+		errs.HandleError(sv.Start())
 	default:
 		errs.HandleError(errs.ErrUnknownSubcommand)
 	}
