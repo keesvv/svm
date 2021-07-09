@@ -5,3 +5,6 @@ compile:
 
 strip:
 	strip svm
+
+install:
+	install -Dvm 755 ./svm /usr/bin/svm
