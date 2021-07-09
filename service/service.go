@@ -41,12 +41,20 @@ func (service *Service) Stop() error {
 		return errs.ErrIsStopped
 	}
 
+	if service.Runlevel == LEVEL_NONE {
+		return errs.ErrNoRunlevel
+	}
+
 	return service.WriteCommand("d")
 }
 
 func (service *Service) Start() error {
 	if service.Running {
 		return errs.ErrIsStarted
+	}
+
+	if service.Runlevel == LEVEL_NONE {
+		return errs.ErrNoRunlevel
 	}
 
 	return service.WriteCommand("u")

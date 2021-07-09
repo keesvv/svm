@@ -12,6 +12,7 @@ var ErrUnknownSubcommand = errors.New("unknown subcommand")
 var ErrIsStopped = errors.New("service is already stopped")
 var ErrIsStarted = errors.New("service is already running")
 var ErrPermission = errors.New("svm is unable to list services; are you sure you are running this as root?")
+var ErrNoRunlevel = errors.New("service has no runlevel, starting/stopping it is not yet supported")
 
 func HandleError(err error) {
 	if err == nil {

@@ -72,6 +72,7 @@ func main() {
 	services, err := service.ListServices()
 	errs.HandleError(err)
 
+	// TODO: refactor
 	switch args[0] {
 	case "list", "l":
 		printServices(services)
