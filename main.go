@@ -9,15 +9,15 @@ import (
 	"github.com/keesvv/svm/service"
 )
 
-func printServices(services []*service.Service) {
+func printServices(serviceList service.ServiceList) {
 	max := 0
 
-	svRunning := make([]*service.Service, 0)
-	svStopped := make([]*service.Service, 0)
+	svRunning := make(service.ServiceList, 0)
+	svStopped := make(service.ServiceList, 0)
 
 	// Calculate max service name length
 	// Also separate running services from stopped ones
-	for _, i := range services {
+	for _, i := range serviceList {
 		if len(i.Name) > max {
 			max = len(i.Name)
 		}
@@ -34,10 +34,10 @@ func printServices(services []*service.Service) {
 		"%d running services, %d stopped, %d total\n\n",
 		len(svRunning),
 		len(svStopped),
-		len(services),
+		len(serviceList),
 	)
 
-	svOrdered := make([]*service.Service, 0, len(svRunning)+len(svStopped))
+	svOrdered := make(service.ServiceList, 0, len(svRunning)+len(svStopped))
 	svOrdered = append(svOrdered, svRunning...)
 	svOrdered = append(svOrdered, svStopped...)
 

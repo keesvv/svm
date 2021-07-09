@@ -35,7 +35,7 @@ func ListServices() (ServiceList, error) {
 		panic(err)
 	}
 
-	services := make([]*Service, 0)
+	services := make(ServiceList, 0)
 	for _, i := range svDirs {
 		svEnabled := false
 		stat, err := ioutil.ReadFile(path.Join(consts.SV_PATH, i.Name(), "supervise", "stat"))
