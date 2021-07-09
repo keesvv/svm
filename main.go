@@ -83,9 +83,7 @@ func main() {
 
 		for _, i := range args[1:] {
 			sv, err := services.FindByName(i)
-			if err != nil {
-				errs.HandleError(err)
-			}
+			errs.HandleError(err)
 
 			errs.HandleError(sv.Stop())
 			fmt.Printf("\033[1m✔ Stopped service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
@@ -97,12 +95,22 @@ func main() {
 
 		for _, i := range args[1:] {
 			sv, err := services.FindByName(i)
-			if err != nil {
-				errs.HandleError(err)
-			}
+			errs.HandleError(err)
 
 			errs.HandleError(sv.Start())
 			fmt.Printf("\033[1m✔ Started service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
+		}
+	case "enable", "e":
+		if len(args) < 2 {
+			errs.HandleError(errs.ErrArguments)
+		}
+
+		for _, i := range args[1:] {
+			sv, err := services.FindByName(i)
+			errs.HandleError(err)
+
+			errs.HandleError(sv.SetRunlevel(service.LEVEL_DEFAULT))
+			fmt.Printf("\033[1m✔ Enabled service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
 		}
 	default:
 		errs.HandleError(errs.ErrUnknownSubcommand)
