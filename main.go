@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/keesvv/svm/errs"
 	"github.com/keesvv/svm/service"
@@ -49,14 +51,26 @@ func printServices(serviceList service.ServiceList) {
 			status = "\033[92;1mRUNNING\033[0m"
 		}
 
+		lastModified, err := i.LastModified()
+		modifiedStr := fmt.Sprintf(
+			"%d mins ago",
+			int(math.Floor(time.Since(lastModified).Minutes())),
+		)
+
+		if err != nil || lastModified.Before(time.Now().Add(time.Hour*-1)) {
+			modifiedStr = ""
+		}
+
 		// Print service
 		fmt.Printf(
-			"\033[1m%s\033[0m%s%s%s%s\n",
+			"\033[1m%s\033[0m%s%s%s%s%s%s\n",
 			i.Name,
 			strings.Repeat(" ", max-len(i.Name)+columnMargin),
 			status,
 			strings.Repeat(" ", columnMargin),
 			i.Runlevel,
+			strings.Repeat(" ", columnMargin*2-len(i.Runlevel)),
+			modifiedStr,
 		)
 	}
 }

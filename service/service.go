@@ -3,6 +3,7 @@ package service
 import (
 	"os"
 	"path"
+	"time"
 
 	"github.com/keesvv/svm/consts"
 	"github.com/keesvv/svm/errs"
@@ -35,6 +36,16 @@ func (service *Service) WriteCommand(cmd string) error {
 	f.Write([]byte(cmd))
 
 	return f.Close()
+}
+
+func (service *Service) LastModified() (time.Time, error) {
+	f, err := os.Stat(path.Join(service.Path, "supervise", "control"))
+
+	if err != nil {
+		return time.Unix(0, 0), err
+	}
+
+	return f.ModTime(), nil
 }
 
 func (service *Service) Stop() error {
