@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/keesvv/svm/consts"
 	"github.com/keesvv/svm/errs"
 )
 
@@ -58,4 +59,17 @@ func (service *Service) Start() error {
 	}
 
 	return service.WriteCommand("u")
+}
+
+func (service *Service) SetRunlevel(rl Runlevel) error {
+	targetRl := path.Join(consts.RUNSVDIR_PATH, string(rl), service.Name)
+
+	if _, err := os.Stat(targetRl); !os.IsNotExist(err) {
+		return errs.ErrRunlevelExists
+	}
+
+	return os.Symlink(
+		service.Path,
+		targetRl,
+	)
 }
