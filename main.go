@@ -41,6 +41,14 @@ func printServices(serviceList service.ServiceList) {
 		len(serviceList),
 	)
 
+	// Print column headers
+	fmt.Printf(
+		"NAME%sSTATE%sRUNLEVEL%sMODIFIED\n",
+		strings.Repeat(" ", max+columnMargin-4),
+		strings.Repeat(" ", columnMargin+2),
+		strings.Repeat(" ", columnMargin),
+	)
+
 	svOrdered := make(service.ServiceList, 0, len(svRunning)+len(svStopped))
 	svOrdered = append(svOrdered, svRunning...)
 	svOrdered = append(svOrdered, svStopped...)
