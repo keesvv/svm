@@ -18,7 +18,7 @@ func (service *Service) WriteCommand(cmd string) error {
 	f, err := os.Create(path.Join(service.Path, "supervise", "control"))
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// Write command

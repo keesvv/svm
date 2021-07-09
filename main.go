@@ -72,21 +72,33 @@ func main() {
 	case "list", "l":
 		printServices(services)
 	case "stop", "d", "down":
-		sv, err := services.FindByName(args[1])
-		if err != nil {
-			errs.HandleError(err)
+		if len(args) < 2 {
+			errs.HandleError(errs.ErrArguments)
 		}
 
-		errs.HandleError(sv.Stop())
-		fmt.Printf("\033[1m✔ Stopped service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
+		for _, i := range args[1:] {
+			sv, err := services.FindByName(i)
+			if err != nil {
+				errs.HandleError(err)
+			}
+	
+			errs.HandleError(sv.Stop())
+			fmt.Printf("\033[1m✔ Stopped service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
+		}
 	case "start", "u", "up":
-		sv, err := services.FindByName(args[1])
-		if err != nil {
-			errs.HandleError(err)
+		if len(args) < 2 {
+			errs.HandleError(errs.ErrArguments)
 		}
 
-		errs.HandleError(sv.Start())
-		fmt.Printf("\033[1m✔ Started service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
+		for _, i := range args[1:] {
+			sv, err := services.FindByName(i)
+			if err != nil {
+				errs.HandleError(err)
+			}
+	
+			errs.HandleError(sv.Start())
+			fmt.Printf("\033[1m✔ Started service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
+		}
 	default:
 		errs.HandleError(errs.ErrUnknownSubcommand)
 	}
