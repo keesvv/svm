@@ -63,6 +63,15 @@ func (service *Service) Start() error {
 
 func (service *Service) SetRunlevel(rl Runlevel) error {
 	targetRl := path.Join(consts.RUNSVDIR_PATH, string(rl), service.Name)
+	defaultRl := path.Join(consts.RUNSVDIR_PATH, "default", service.Name)
+
+	if rl == LEVEL_NONE {
+		if _, err := os.Stat(defaultRl); os.IsNotExist(err) {
+			return errs.ErrAlreadyDisabled
+		}
+
+		return os.Remove(defaultRl)
+	}
 
 	if _, err := os.Stat(targetRl); !os.IsNotExist(err) {
 		return errs.ErrRunlevelExists
