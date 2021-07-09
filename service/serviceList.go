@@ -38,6 +38,8 @@ func ListServices() (ServiceList, error) {
 	services := make(ServiceList, 0)
 	for _, i := range svDirs {
 		svEnabled := false
+		svRunlevel := LEVEL_NONE
+
 		stat, err := ioutil.ReadFile(path.Join(consts.SV_PATH, i.Name(), "supervise", "stat"))
 
 		// User has insufficient permissions
@@ -55,10 +57,23 @@ func ListServices() (ServiceList, error) {
 			svEnabled = true
 		}
 
+		// Default & single user runlevel
+		defaultRl := path.Join(consts.RUNSVDIR_PATH, "default", i.Name())
+		singleRl := path.Join(consts.RUNSVDIR_PATH, "single", i.Name())
+
+		if _, err := os.Stat(defaultRl); !os.IsNotExist(err) {
+			svRunlevel = LEVEL_DEFAULT
+		}
+
+		if _, err := os.Stat(singleRl); !os.IsNotExist(err) {
+			svRunlevel = LEVEL_SINGLE
+		}
+
 		services = append(services, &Service{
-			Name:    i.Name(),
-			Running: svEnabled,
-			Path:    path.Join(consts.SV_PATH, i.Name()),
+			Name:     i.Name(),
+			Running:  svEnabled,
+			Path:     path.Join(consts.SV_PATH, i.Name()),
+			Runlevel: svRunlevel,
 		})
 	}
 

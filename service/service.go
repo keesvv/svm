@@ -7,11 +7,20 @@ import (
 	"github.com/keesvv/svm/errs"
 )
 
+type Runlevel string
+
 type Service struct {
-	Name    string
-	Running bool
-	Path    string
+	Name     string
+	Running  bool
+	Path     string
+	Runlevel Runlevel
 }
+
+const (
+	LEVEL_DEFAULT Runlevel = "default"
+	LEVEL_SINGLE  Runlevel = "single"
+	LEVEL_NONE    Runlevel = "none"
+)
 
 func (service *Service) WriteCommand(cmd string) error {
 	// Open control file for writing

@@ -10,6 +10,8 @@ import (
 )
 
 func printServices(serviceList service.ServiceList) {
+	const columnMargin int = 8
+
 	max := 0
 
 	svRunning := make(service.ServiceList, 0)
@@ -49,10 +51,12 @@ func printServices(serviceList service.ServiceList) {
 
 		// Print service
 		fmt.Printf(
-			"\033[1m%s\033[0m%s%s\n",
+			"\033[1m%s\033[0m%s%s%s%s\n",
 			i.Name,
-			strings.Repeat(" ", max-len(i.Name)+5),
+			strings.Repeat(" ", max-len(i.Name)+columnMargin),
 			status,
+			strings.Repeat(" ", columnMargin),
+			i.Runlevel,
 		)
 	}
 }
@@ -81,7 +85,7 @@ func main() {
 			if err != nil {
 				errs.HandleError(err)
 			}
-	
+
 			errs.HandleError(sv.Stop())
 			fmt.Printf("\033[1m✔ Stopped service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
 		}
@@ -95,7 +99,7 @@ func main() {
 			if err != nil {
 				errs.HandleError(err)
 			}
-	
+
 			errs.HandleError(sv.Start())
 			fmt.Printf("\033[1m✔ Started service \033[96m%s\033[0;1m.\033[0m\n", sv.Name)
 		}
