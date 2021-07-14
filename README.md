@@ -1,6 +1,8 @@
 # svm
 Lightweight service manager for runit.
 
+![Screenshot](./assets/screenshot.png)
+
 ## Usage
 `// TODO: coming soon`
 
