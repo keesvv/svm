@@ -1,7 +1,7 @@
 # Maintainer: Kees van Voorthuizen <me@keesvv.nl>
 pkgname=svm
-pkgver=0.0.1_pre
-_ghver=0.0.1-pre
+pkgver=0.0.2_pre
+_ghver=0.0.2-pre
 pkgrel=1
 pkgdesc="Lightweight service manager for runit."
 arch=('x86_64')
